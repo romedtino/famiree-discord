@@ -13,7 +13,7 @@ function help_info() {
 
 }
 
-function bark(command, message) {
+function execute(command, args, message) {
   if(command === jsCommand && filter(message)) {
     request({
             url: dog,
@@ -26,5 +26,5 @@ function bark(command, message) {
 
 }
 
-module.exports = bark;
+module.exports.execute = execute;
 module.exports.help_info = help_info;

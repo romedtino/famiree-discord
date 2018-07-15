@@ -22,7 +22,7 @@ function randRange(min, max) {
   return Math.floor(Math.random() * (max - min) + min);
 }
 
-function meeseeks(message) {
+function execute(commands, args, message) {
   var lower_content = message.content.toLowerCase();
   if(lower_content.indexOf("meeseeks") > -1 && filter(message)) {
     var meeChoice = randRange(0, meesay.length); 
@@ -34,5 +34,5 @@ function meeseeks(message) {
 
 }
 
-module.exports = meeseeks;
+module.exports.execute = execute;
 module.exports.help_info = help_info;
