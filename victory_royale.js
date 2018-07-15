@@ -2,8 +2,6 @@ var filter = require('./channel_filter.js')
 
 var cmd = "royale";
 
-var winners = [ "Sajedene" ];
-
 function help_info() {
   var help = {};
   help["command"] = cmd;
@@ -19,6 +17,11 @@ function execute(command, args, message) {
     var msg = "https://media1.tenor.com/images/d89ba4e965cb9144c82348a1c234d425/tenor.gif \n\n";
     msg +="**[Battle Royale] [Victory Royale]**\n";
     msg +="*__Exlusive__ Member* list:\n";
+    
+    var winners = process.env.ROYALE_WINNERS;
+    
+    winners = winners.split(',');
+    
     for(var i=0;i<winners.length;i++) {
       msg += "        `" + winners[i] + "`\n";
     }
