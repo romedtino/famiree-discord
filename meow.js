@@ -13,7 +13,7 @@ function help_info() {
 
 }
 
-function meow(command, message) {
+function execute(command, args, message) {
   if(command === jsCommand && filter(message)) {
     request({
             url: cat,
@@ -31,5 +31,5 @@ function meow(command, message) {
 
 }
 
-module.exports = meow;
+module.exports.execute = execute;
 module.exports.help_info = help_info;

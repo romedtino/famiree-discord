@@ -33,7 +33,7 @@ var Datastore = require('nedb'),
 function help_info() {
   var help = {};
   help["command"] = jsCommand;
-  help["help"] = "Look up or assign someone's Myer Brigg's personality type. \nUsage: `!mb [name][add name type][remove name][sheet]`\n e.g. `!mb add Jerome intj"
+  help["help"] = "Look up or assign someone's Myer Brigg's personality type. \nUsage: `!mb [name][add name type][remove name][sheet]`\n e.g. `!mb add Jerome intj`"
 
   return help;
 
@@ -152,7 +152,7 @@ function deleteDB()
   });
 }
 
-function mb(command, args, message) {
+function execute(command, args, message) {
   if(command === jsCommand && filter(message)) {
     var req = args[0];
     console.log(req);
@@ -184,5 +184,5 @@ function mb(command, args, message) {
 
 }
 
-module.exports = mb;
+module.exports.execute = execute;
 module.exports.help_info = help_info;

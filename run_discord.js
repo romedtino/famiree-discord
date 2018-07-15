@@ -1,13 +1,20 @@
 // Load up the discord.js library
 const Discord = require("discord.js");
 
-const meeseeks = require('./meeseeks.js');
-const slap = require('./slap.js');
-const fart = require('./fart.js');
+const commandList = [];
+
+commandList.push(require('./meeseeks.js'));
+commandList.push(require('./slap.js'));
+commandList.push(require('./fart.js'));
+commandList.push(require('./meow.js'));
+commandList.push(require('./bark.js'));
+commandList.push(require('./mb.js'));
+commandList.push(require('./victory_royale.js'));
+
 const help = require('./help.js');
-const meow = require('./meow.js');
-const bark = require('./bark.js');
-const mb = require('./mb.js');
+commandList.push(help);
+
+
 
 // This is your client. Some people call it `bot`, some people call it `self`, 
 // some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
@@ -27,12 +34,10 @@ client.on("ready", () => {
   client.user.setActivity(`Serving ${client.guilds.size} servers`);
 
   //Add commands 
-  help.add_command(meeseeks.help_info());
-  help.add_command(slap.help_info());
-  help.add_command(fart.help_info());
-  help.add_command(meow.help_info());
-  help.add_command(bark.help_info());
-  help.add_command(mb.help_info());
+  for(var i=0;i<commandList.length;i++) {
+    help.add_command(commandList[i].help_info());
+  }
+  
 });
 
 client.on("message", async message => {
@@ -42,10 +47,6 @@ client.on("message", async message => {
   // and not get into a spam loop (we call that "botception").
   if(message.author.bot) return;
 
-
-  if(meeseeks(message)) {
-    return;
-  }
 
   // Also good practice to ignore any message that does not start with our prefix, 
   // which is set in the configuration file.
@@ -59,12 +60,9 @@ client.on("message", async message => {
   const command = args.shift().toLowerCase();
  
 
-  slap(command, args, message);
-  fart(command, args, message);
-  help(command, message); 
-  meow(command, message);
-  bark(command, message);
-  mb(command, args, message);
+ for(var i=0;i<commandList.length;i++) {
+   commandList[i].execute(command, args, message);
+ }
 });
 
 client.login(config.token);

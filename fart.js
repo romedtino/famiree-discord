@@ -9,12 +9,12 @@ function help_info() {
 
 }
 
-function fart(command, args, message) {
+function execute(command, args, message) {
   if(command === "fart" && filter(message)) {
     message.channel.send("<@" + message.author.id + "> farts on " + args + " with a soft soggy wet one");
   }
 
 }
 
-module.exports = fart;
+module.exports.execute = execute;
 module.exports.help_info = help_info;

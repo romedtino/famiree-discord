@@ -9,7 +9,7 @@ function help_info() {
  
 }
 
-function slap(command, args, message) {
+function execute(command, args, message) {
   
   if(command === "slap" && filter(message)) {
     message.channel.send("<@" + message.author.id + "> slaps " + args + " around a bit with a large trout");
@@ -18,5 +18,5 @@ function slap(command, args, message) {
 
 }
 
-module.exports = slap;
+module.exports.execute = execute;
 module.exports.help_info = help_info;
