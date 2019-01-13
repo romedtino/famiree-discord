@@ -10,7 +10,8 @@ commandList.push(require('./meow.js'));
 commandList.push(require('./bark.js'));
 commandList.push(require('./mb.js'));
 commandList.push(require('./victory_royale.js'));
-
+commandList.push(require('./saj.js'));
+commandList.push(require('./poll.js'));
 const help = require('./help.js');
 commandList.push(help);
 
@@ -61,7 +62,7 @@ client.on("message", async message => {
  
 
  for(var i=0;i<commandList.length;i++) {
-   commandList[i].execute(command, args, message);
+   commandList[i].execute(command, args, message, client);
  }
 });
 
