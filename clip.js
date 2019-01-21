@@ -4,8 +4,9 @@ var filter = require('./channel_filter.js')
 var twitchAPI = 'https://api.twitch.tv/helix';
 var latestClipURL = "";
 var latestClipMilli = null;
-var mainUser = 'broadcaster_id=' + process.env.BCAST_ID;
+var mainUser = 'broadcaster_id=';
 var clipCount = '&first=100';
+var login = "";
 
 function help_info() {
   var help = {};
@@ -16,10 +17,9 @@ function help_info() {
  
 }
 
-
-function twitchClipsRequest(message, extraURLParams)
+var twitchClipsRequest = function(message, extraParams)
 {
-  var options = { url:twitchAPI + '/clips?' + extraURLParams,
+  var options = { url:twitchAPI + '/clips?' + mainUser + clipCount + extraParams,
                   json: true,
                   headers: {
                     "Client-ID" : process.env.TWITCH_TOKEN
@@ -39,9 +39,9 @@ function twitchClipsRequest(message, extraURLParams)
       if(body.pagination.cursor != null)
       {
         var paginator = "&after=" + body.pagination.cursor;
-        twitchClipsRequest(message, mainUser + clipCount + paginator);
+        twitchClipsRequest(message, paginator);
       } else {
-        message.channel.send("<@" + message.author.id + "> here is Sajedene's latest clip: " + latestClipURL);
+        message.channel.send("<@" + message.author.id + "> here is " + login + "'s latest clip: " + latestClipURL);
         console.log("Found it: " + latestClipURL);
       }
       
@@ -50,10 +50,29 @@ function twitchClipsRequest(message, extraURLParams)
   
 }
 
+var getIdAndClip = function(message)
+{
+   var options = { url:twitchAPI + '/users?login=' + login,
+                  json: true,
+                  headers: {
+                    "Client-ID" : process.env.TWITCH_TOKEN
+                  }
+                };
+  request(options, function(error, response, body) {
+    
+    var bcastId = body.data[0].id;
+    mainUser += bcastId;
+    console.log(mainUser);
+    twitchClipsRequest(message, "");
+  });
+  
+}
+
 function execute(command, args, message) 
 {
-  if(command === "saj" && filter(message)) {
-     twitchClipsRequest(message, mainUser + clipCount);
+  if(command === "clip" && filter(message)) {
+     login = args[0];
+     getIdAndClip(message, login);
   }
 }
 
