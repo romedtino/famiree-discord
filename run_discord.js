@@ -62,7 +62,7 @@ client.on("message", async message => {
  
 
  for(var i=0;i<commandList.length;i++) {
-   commandList[i].execute(command, args, message, client);
+   commandList[i].execute(command, args, message);
  }
 });
 
