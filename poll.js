@@ -30,8 +30,10 @@ function execute(command, args, message) {
       pollText += pollInfo[i] + " - " + pollInfo[i+1] + "\n"; 
     }
     
-    
-    message.guild.channels.find("name", channelName).send(pollText)
+    try
+    {
+    message.guild.channels.find("name", channelName)
+      .send(pollText)
       .then(function (message) {
       
           for(var i=1;i < pollInfo.length-1;i=i+2)
@@ -56,7 +58,11 @@ function execute(command, args, message) {
       }).catch(function() {
           message.channel.send("Something went wonky with creating your poll :(");
       });
-   // message.channel.send("<@" + message.author.id + "> slaps " + args + " around a bit with a large trout");
+    } catch(error) 
+    {
+      console.log(error);
+      message.channel.send("The Guild (server) you're on doesn't seem to have a polls channel.");
+    }
   }
 
 
