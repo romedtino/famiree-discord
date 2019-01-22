@@ -10,10 +10,10 @@ function help_info() {
  
 }
 
-function execute(command, args, message, client) {
+function execute(command, args, message) {
   
   if(command === "poll" && filter(message)) {
-    var channelName = "polls"
+    var channelName = "polls"; 
     var pollText = ""
     var pollInfo = args.join(" ").split(',');
     
@@ -31,24 +31,24 @@ function execute(command, args, message, client) {
     }
     
     
-    client.channels.find("name", channelName).send(pollText)
+    message.guild.channels.find("name", channelName).send(pollText)
       .then(function (message) {
       
           for(var i=1;i < pollInfo.length-1;i=i+2)
           {
             var actualText;
             if(pollInfo[i].includes(":")) {
+              
                //custom emoji
-              var partial = pollInfo[i].trim().substr(pollInfo[i].lastIndexOf(":"));
-              console.log("raw:__" + pollInfo[i].trim() + "__");
-              console.log("partial: " + partial);
-              var full = partial.substr(0, partial.length-1);
-              var tgtEmoji = client.emojis.get(full);
-              console.log("full: " + tgtEmoji.id);
+              var partial = pollInfo[i].trim();
+              partial = partial.substr(partial.lastIndexOf(":"));
+              console.log("emoji part:__" + partial + "__");
+              var full = partial.substr(1, partial.length-2);
+              console.log("emoji full:__" + full + "__");
+              var tgtEmoji = message.client.emojis.get(full);
               message.react(tgtEmoji);
             } else {
                //standard
-               console.log("straight react: " + pollInfo[i].trim());
                message.react(pollInfo[i].trim());
             }            
           }
