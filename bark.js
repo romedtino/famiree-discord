@@ -21,6 +21,9 @@ function execute(command, args, message) {
         }, function (error, response, body) {
             console.log(body);
             message.channel.send("<@" + message.author.id + "> bark! " + body.url);
+            message.delete()
+              .then(() => console.log("message deleted."))
+              .catch(console.error);
             })
   }
 
