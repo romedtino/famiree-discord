@@ -27,7 +27,10 @@ function execute(commands, args, message) {
   if(lower_content.indexOf("meeseeks") > -1 && filter(message)) {
     var meeChoice = randRange(0, meesay.length); 
 
-     message.channel.send("Meeseeks - *" + meesay[meeChoice] + "*");
+     message.channel.send("<@" + message.author.id +">   Meeseeks - *" + meesay[meeChoice] + "*");
+     message.delete()
+      .then(() => console.log("message deleted."))
+      .catch(console.error);
      return true;
   }
   return false;  

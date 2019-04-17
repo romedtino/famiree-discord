@@ -14,7 +14,7 @@ function help_info() {
 function execute(command, args, message) {
   
   if(command === cmd && filter(message)) {
-    var msg = "https://media1.tenor.com/images/d89ba4e965cb9144c82348a1c234d425/tenor.gif \n\n";
+    var msg = "<@" + message.author.id + ">  https://media1.tenor.com/images/d89ba4e965cb9144c82348a1c234d425/tenor.gif \n\n";
     msg +="**[Battle Royale] [Victory Royale]**\n";
     msg +="*__Exlusive__ Member* list:\n";
     
@@ -26,6 +26,10 @@ function execute(command, args, message) {
       msg += "        `" + winners[i] + "`\n";
     }
     message.channel.send(msg);
+    
+    message.delete()
+      .then(() => console.log("message deleted."))
+      .catch(console.error);
   }
 
 }

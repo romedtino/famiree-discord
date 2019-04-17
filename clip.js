@@ -10,8 +10,8 @@ var login = "";
 
 function help_info() {
   var help = {};
-  help["command"] = null;
-  help["help"] = "";
+  help["command"] = "clip";
+  help["help"] = "Grabs the latest Twitch.tv clip of a given user. Usage: `!clip [Twitch Username]`\n    e.g. `!clip Sajedene`";
 
   return help;
  
@@ -48,7 +48,9 @@ var twitchClipsRequest = function(message, extraParams)
         twitchClipsRequest(message, paginator);
       } else {
         message.channel.send("<@" + message.author.id + "> here is " + login + "'s latest clip: " + latestClipURL);
-        console.log("Found it: " + latestClipURL);
+        message.delete()
+          .then(() => console.log("message deleted."))
+          .catch(console.error);
       }
       
     }  
@@ -69,6 +71,9 @@ var getIdAndClip = function(message)
     if(body.data.length <= 0)
     {
       message.channel.send("<@" + message.author.id + "> - We didn't find a user with the name " + login);  
+      message.delete()
+        .then(() => console.log("message deleted."))
+        .catch(console.error);
     } else {
       var bcastId = body.data[0].id;
       mainUser = 'broadcaster_id=' + bcastId;

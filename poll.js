@@ -4,7 +4,7 @@ function help_info() {
   var help = {};
   help["command"] = "poll";
   help["help"] = "Start a poll. Usage: `!poll [Poll Question],[Option 1 emoji],[Option 1 text],[Option 2 emoji],[Option 2 text],...[Option N emoji],[Option N text]`";
-  help["help"] = "\n    e.g. `!poll Who is the best at making breakfast?, :laughing: , John Adams, :rofl:, Benjamin Button`"
+  help["help"] += "\n    e.g. `!poll Who is the best at making breakfast?, :laughing: , John Adams, :rofl:, Benjamin Button`"
 
   return help;
  
@@ -32,9 +32,9 @@ function execute(command, args, message) {
     
     try
     {
-    message.guild.channels.find("name", channelName)
-      .send(pollText)
-      .then(function (message) {
+      message.guild.channels.find("name", channelName)
+        .send("<@" + message.author.id +"> " + pollText)
+        .then(function (message) {
       
           for(var i=1;i < pollInfo.length-1;i=i+2)
           {
@@ -54,8 +54,11 @@ function execute(command, args, message) {
                message.react(pollInfo[i].trim());
             }            
           }
-
-      }).catch(function() {
+      message.delete()
+        .then(() => console.log("message deleted."))
+        .catch(console.error);
+      })
+      .catch(function() {
           message.channel.send("Something went wonky with creating your poll :(");
       });
     } catch(error) 

@@ -25,8 +25,11 @@ function execute(command, args, message) {
             }
             else {
               message.channel.send("<@" + message.author.id + "> meow! " + body.file);
+              message.delete()
+                .then(() => console.log("message deleted."))
+                .catch(console.error);
             }
-            })
+            });
   }
 
 }

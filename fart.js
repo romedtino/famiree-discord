@@ -12,6 +12,9 @@ function help_info() {
 function execute(command, args, message) {
   if(command === "fart" && filter(message)) {
     message.channel.send("<@" + message.author.id + "> farts on " + args + " with a soft soggy wet one");
+    message.delete()
+    .then(() => console.log("message deleted."))
+    .catch(console.error);
   }
 
 }

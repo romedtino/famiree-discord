@@ -12,6 +12,7 @@ commandList.push(require('./mb.js'));
 commandList.push(require('./victory_royale.js'));
 commandList.push(require('./clip.js'));
 commandList.push(require('./poll.js'));
+commandList.push(require('./evan.js'));
 const help = require('./help.js');
 commandList.push(help);
 
@@ -32,7 +33,7 @@ client.on("ready", () => {
   console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`); 
   // Example of changing the bot's playing game to something useful. `client.user` is what the
   // docs refer to as the "ClientUser".
-  client.user.setActivity(`Serving ${client.guilds.size} servers`);
+  client.user.setActivity(`${client.guilds.size} servers for fools`);
 
   //Add commands 
   for(var i=0;i<commandList.length;i++) {

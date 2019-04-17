@@ -155,7 +155,8 @@ function deleteDB()
 }
 
 function execute(command, args, message) {
-  if(command === jsCommand && filter(message)) {
+  console.log(message.guild.name);
+  if(command === jsCommand && filter(message) && message.guild.name === "Famiree") {
     var req = args[0];
     console.log(req);
     if(req === undefined) {
