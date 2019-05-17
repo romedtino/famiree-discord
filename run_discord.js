@@ -6,7 +6,6 @@ const commandList = [];
 const commandList2 = require('./commands.js').commands;
 
 commandList.push(require('./poll.js'));
-commandList.push(require('./brazzers.js'));
 const help = require('./help.js');
 commandList.push(help);
 
