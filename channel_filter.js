@@ -2,7 +2,8 @@ var whitelist = ["1337-speak",
                  "cousins-trip",
                  "secret-santa-2018",
                  "sports",
-                 "general"
+                 "general",
+                 "bananaonly"
                 ]
 
 module.exports = function (message) {

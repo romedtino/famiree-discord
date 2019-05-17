@@ -34,5 +34,9 @@ module.exports = { "commands" : [{
       "command" : "royale",
       "args" : process.env.ROYALE_WINNERS
     },
+    {
+      "command" : "brazzers",
+      "args" : ""
+    },
   ]
 }
