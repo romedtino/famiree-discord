@@ -34,8 +34,9 @@ function execute(command, args, message) {
     {
       message.guild.channels.find("name", channelName)
         .send("<@" + message.author.id +"> " + pollText)
-        .then(function (message) {
+        .then(function (pollMessage) {
       
+          var promisedReactions = [];
           for(var i=1;i < pollInfo.length-1;i=i+2)
           {
             var actualText;
@@ -47,16 +48,19 @@ function execute(command, args, message) {
               console.log("emoji part:__" + partial + "__");
               var full = partial.substr(1, partial.length-2);
               console.log("emoji full:__" + full + "__");
-              var tgtEmoji = message.client.emojis.get(full);
-              message.react(tgtEmoji);
+              var tgtEmoji = pollMessage.client.emojis.get(full);
+              promisedReactions.push(pollMessage.react(tgtEmoji));
             } else {
                //standard
-               message.react(pollInfo[i].trim());
+               promisedReactions.push(pollMessage.react(pollInfo[i].trim()));
             }            
           }
-      message.delete()
-        .then(() => console.log("message deleted."))
-        .catch(console.error);
+        Promise.all(promisedReactions).then( () => {
+          message.delete()
+            .then(() => console.log("message deleted."))
+            .catch(console.error);
+        });
+      
       })
       .catch(function() {
           message.channel.send("Something went wonky with creating your poll :(");

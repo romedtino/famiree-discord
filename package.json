@@ -9,11 +9,11 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "discord.js": "^11.4.2",
-    "express": "^4.16.4",
-    "fs": "^0.0.1-security",
+    "discord.js": "^11.5.1",
+    "express": "^4.17.1",
+    "fs": "^0.0.2",
     "imgur": "^0.3.1",
-    "jimp": "^0.6.4",
+    "jimp": "^0.9.1",
     "nedb": "^1.8.0",
     "request": "^2.88.0"
   },
