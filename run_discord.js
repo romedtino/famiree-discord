@@ -71,4 +71,7 @@ client.on("message", async message => {
   
 });
 
-client.login(config.token);
+client.login(config.token)
+  .catch(console.error);
+
+client.on('error', (error) => console.log(error));

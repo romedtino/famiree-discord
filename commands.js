@@ -1,42 +1,52 @@
-module.exports = { "commands" : [{
-    "command" : "bark",
-    "args" : ""
+module.exports = {
+  commands: [
+    {
+      command: "bark",
+      args: ""
     },
     {
-      "command" : "clip",
-      "args" : ""
+      command: "clip",
+      args: ""
     },
     {
-      "command" : "evan",
-      "args" : ""
+      command: "evan",
+      args: ""
     },
     {
-      "command" : "fart",
-      "args" : ""
+      command: "fart",
+      args: ""
     },
     {
-      "command" : "mb",
-      "args" : ""
+      command: "mb",
+      args: ""
     },
     {
-      "command" : "meeseeks",
-      "args" : ""
+      command: "meeseeks",
+      args: ""
     },
     {
-      "command" : "meow",
-      "args" : ""
+      command: "meow",
+      args: ""
     },
     {
-      "command" : "slap",
-      "args" : ""
+      command: "slap",
+      args: ""
     },
     {
-      "command" : "royale",
-      "args" : process.env.ROYALE_WINNERS
+      command: "royale",
+      args: process.env.ROYALE_WINNERS
     },
     {
-      "command" : "brazzers",
-      "args" : ""
+      command: "brazzers",
+      args: ""
     },
+    {
+      command: "4th",
+      args: ""
+    },
+    {
+      command: "weow",
+      args: ""
+    }
   ]
-}
+};
