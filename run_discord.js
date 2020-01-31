@@ -1,6 +1,7 @@
 // Load up the discord.js library
 const Discord = require("discord.js");
 const congo = require('./bot-conglomorate.js');
+const fnstats = require('./fnstats.js');
 
 const commandList = [];
 const commandList2 = require('./commands.js').commands;
@@ -9,7 +10,7 @@ commandList.push(require('./poll.js'));
 const help = require('./help.js');
 commandList.push(help);
 
-commandList.push(require('./mbn.js'))
+commandList.push(require('./mbn.js'));
 
 // This is your client. Some people call it `bot`, some people call it `self`, 
 // some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
@@ -35,8 +36,11 @@ client.on("ready", () => {
   
   for(var i=0;i<commandList2.length;i++) {
     congo.help(commandList2[i].command)
-      .then( res => help.add_command(res));
+      .then( res => help.add_command(res))
+      .catch( err => console.log("Problem receiving help from bot-congo: " + err));
   }
+  
+  fnstats.execute(client);
   
 });
 

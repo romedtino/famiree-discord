@@ -25,8 +25,11 @@ function execute(command, args, message) {
 function help(command) {
   return new Promise( (resolve, reject) => {
     var customUrl = url + command + "/help" + "?prefix=" + config.prefix;
-
+    console.log("[CONGO] - Grabbing help: " + customUrl);
     request.get(customUrl, (error, res, body) => {
+      if(error) {
+        return reject(error);
+      }
       resolve(JSON.parse(body));
     });
   });
