@@ -1,7 +1,7 @@
 var request = require("request");
 var filter = require("./channel_filter.js");
 
-var url = "https://api.fortnitetracker.com/v1/profile/pc/";
+var url = "https://api.fortnitetracker.com/v1/profile/";
 
 var intro_text = ["FORTNITE VICTORY ROYALE",
                   "BATTLE ROYALE CHAMPI0NS",
@@ -39,14 +39,16 @@ function randRange(min, max) {
 function lookup(user, timeout) {
   return new Promise((resolve, reject) => {
     sleep(timeout).then(() => {
+      // console.log("[FNSTATS] lookup requesting for - " + user);
       request(
         {
           url: url + user,
           headers: {
-            "TRN-Api-Key": process.env.FNTRACK_TOKEN
+            "TRN-Api-Key": process.env.FNTRACK_TOKEN,
           }
         },
         function(error, response, body) {
+
           if(error) {
             console.log("Hmm something went wrong querying api..." + error);
             resolve(0);
@@ -78,6 +80,7 @@ function lookup(user, timeout) {
               userList[dataParsed.epicUserHandle] = total;
               resolve(dataParsed.epicUserHandle);
             } else {
+              // console.log("[FNSTATS] No recent wins for " + dataParsed.epicUserHandle);
               resolve(0);
             }
           }
@@ -104,12 +107,15 @@ function sendMessage(message) {
 }
 
 function iterateUserList() {
+  // console.log("[FNSTATS] Iterating...");
   let tokens = process.env.FNTRACK_QUERY.split(",");
   let lookupPromises = [];
   for (let i = 0; i < tokens.length; i++) {
     lookupPromises.push(lookup(tokens[i], 3000 * i));
   }
+  
   Promise.all(lookupPromises).then(values => {
+    
     for (let i = 0; i < values.length; i++) {
       if (values[i] != 0) {
         console.log("Entry Approved: " + values[i]);
@@ -129,7 +135,7 @@ function iterateUserList() {
         
         
         sendMessage(
-          `**${introChoice}!**\n${urlChoice}\n\n${subChoice}\n\`${joined}\``
+          `**${intro_text[introChoice]}!**\n${url_list[urlChoice]}\n\n${sub_text[subChoice]}\n\`${joined}\``
         );
         
         //Reset since we sent
@@ -149,7 +155,7 @@ function iterateUserList() {
 function execute(client) {
   discordClient = client;
   iterateUserList();
-  setInterval(iterateUserList, 120000);
+  setInterval(iterateUserList, 180000);
 }
 
 module.exports.execute = execute;

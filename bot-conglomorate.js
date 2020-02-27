@@ -6,6 +6,7 @@ var url="https://bot-conglomorate.glitch.me/";
 function execute(command, args, message) {
     
   var payload = { "client" : message.author.id,
+                 "username" : message.author.username,
                  "key" : process.env.FAMIREE_KEY,
                 "args" : args };
   
