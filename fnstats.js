@@ -75,7 +75,7 @@ function lookup(user, timeout) {
             if (userList[dataParsed.epicUserHandle] != total) {
               //Wins detected!
               console.log(
-                `[FNSTATS User ${dataParsed.epicUserHandle} has new score with: ${total}`
+                `[FNSTATS User ${dataParsed.epicUserHandle} has new score with: ${total} from ${userList[dataParsed.epicUserHandle]}`
               );
               userList[dataParsed.epicUserHandle] = total;
               resolve(dataParsed.epicUserHandle);
