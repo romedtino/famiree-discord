@@ -59,9 +59,17 @@ function lookup(user, timeout) {
 
           if(error) {
             console.log("Hmm something went wrong querying api..." + error);
-            resolve(0);
+            return resolve(0);
           }
-          let dataParsed = JSON.parse(body);
+          let dataParsed = null;
+          try {
+            dataParsed = JSON.parse(body);
+          } catch(err) {
+            console.log(err);
+            console.log("Failed to parse json body for fnstats");
+            console.log(body);
+            return resolve(0);
+          };
           //all wins
           let target = dataParsed.lifeTimeStats.find( (stat) => {
             if(stat.key === "Wins") {
