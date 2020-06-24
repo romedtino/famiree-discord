@@ -1,6 +1,14 @@
 var request = require("request");
 var filter = require("./channel_filter.js");
 
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
+const adapter = new FileSync(".db.json");
+const db = low(adapter);
+
+db.defaults({})
+  .write();
+
 var url = "https://api.fortnitetracker.com/v1/profile/";
 
 var intro_text = ["FORTNITE VICTORY ROYALE",
@@ -63,26 +71,33 @@ function lookup(user, timeout) {
           
           let total = target.value;
 
-          if (!(dataParsed.epicUserHandle in userList)) {
+          // if (!(dataParsed.epicUserHandle in userList)) {
+          if(!db.has(dataParsed.epicUserHandle).value()) {
             // user hasn't been looked up
             console.log(
               `[FNSTATS] New user -  ${dataParsed.epicUserHandle} with score: ${total}`
             );
-            userList[dataParsed.epicUserHandle] = total;
+            db.set(dataParsed.epicUserHandle, total)
+              .write();
+            // userList[dataParsed.epicUserHandle] = total;
             resolve(0);
           } else {
             //user exists, check if value changed
-            if (userList[dataParsed.epicUserHandle] != total) {
+            cur_val = db.get(dataParsed.epicUserHandle).value()
+            if(cur_val < total) {
+            // if (userList[dataParsed.epicUserHandle] != total) {
               //Wins detected!
               console.log(
                 `[FNSTATS User ${dataParsed.epicUserHandle} has new score with: ${total}`
               );
-              userList[dataParsed.epicUserHandle] = total;
+              // userList[dataParsed.epicUserHandle] = total;
               resolve(dataParsed.epicUserHandle);
             } else {
-              // console.log("[FNSTATS] No recent wins for " + dataParsed.epicUserHandle);
+              console.log("[FNSTATS] No recent wins for " + dataParsed.epicUserHandle + " " + cur_val + "/" + total);
               resolve(0);
             }
+            db.set(dataParsed.epicUserHandle, total)
+              .write();
           }
         }
       );
