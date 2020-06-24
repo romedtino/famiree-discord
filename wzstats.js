@@ -136,7 +136,7 @@ function queryWins() {
 function execute(client) {
     discordClient = client;
     queryWins();
-    setInterval(queryWins, 180000);
+    setInterval(queryWins, 300000);
 }
     
 module.exports.execute = execute;
