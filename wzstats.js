@@ -140,5 +140,3 @@ function execute(client) {
 }
     
 module.exports.execute = execute;
-
-execute("hi");
