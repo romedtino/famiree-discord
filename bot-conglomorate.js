@@ -1,8 +1,7 @@
 var request = require ("request");
 const config = require('./config.js');
 
-var url="https://bot-conglomorate.glitch.me/";
-
+var url=process.env.CONGO_URL;
 function execute(command, args, message) {
     
   var payload = { "client" : message.author.id,
