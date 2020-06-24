@@ -2,6 +2,7 @@
 const Discord = require("discord.js");
 const congo = require('./bot-conglomorate.js');
 const fnstats = require('./fnstats.js');
+const wzstats = require('./wzstats.js');
 
 const commandList = [];
 const commandList2 = require('./commands.js').commands;
@@ -41,6 +42,7 @@ client.on("ready", () => {
   }
   
   fnstats.execute(client);
+  wzstats.execute(client);
   
 });
 
