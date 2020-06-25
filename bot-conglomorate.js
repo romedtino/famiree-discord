@@ -28,9 +28,15 @@ function help(command) {
     console.log("[CONGO] - Grabbing help: " + customUrl);
     request.get(customUrl, (error, res, body) => {
       if(error) {
-        return reject(error);
+        console.log("Error on URL request " + error);
+        return reject(command);
       }
-      resolve(JSON.parse(body));
+      try {
+        resolve(JSON.parse(body));
+      }catch(err) {
+        console.log("Error on JSON parse " + err);
+        reject(command);
+      }
     });
   });
 }

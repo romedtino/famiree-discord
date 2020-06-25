@@ -34,17 +34,54 @@ client.on("ready", () => {
   for(var i=0;i<commandList.length;i++) {
     help.add_command(commandList[i].help_info());
   }
-  
-  for(var i=0;i<commandList2.length;i++) {
-    congo.help(commandList2[i].command)
-      .then( res => help.add_command(res))
-      .catch( err => console.log("Problem receiving help from bot-congo: " + err));
-  }
+
+  var commandNames = [];
+  commandList2.forEach(ele => commandNames.push(ele.command));
+  loadCongos(commandNames);
   
   fnstats.execute(client);
   wzstats.execute(client);
   
 });
+
+function addCommand(command) {
+  return new Promise((good, bad) => {
+    congo
+      .help(command)
+      .then(res => {
+        console.log(`Added ${command}!`);
+        help.add_command(res);
+        good("yes");
+      })
+      .catch(err => {
+        console.log("Problem receiving help from bot-congo: " + err);
+        good(err);
+      });
+  });
+}
+
+function loadCongos(congoList) {
+  var promises = [];
+  for (var i = 0; i < congoList.length; i++) {
+    promises.push(addCommand(congoList[i]));
+  }
+
+  Promise.all(promises).then(results => {
+    console.log("All promises received, checking for failures to redo...");
+    var idx;
+    var redos = [];
+    for (idx = 0; idx < results.length; ++idx) {
+      if (results[idx] !== "yes") {
+        console.log(`Redoing ${results[idx]}...`);
+        redos.push(results[idx]);
+      }
+    }
+
+    if(redos.length != 0) {
+      setTimeout(()=> {loadCongos(redos)}, 60000);
+    }
+  });
+}
 
 client.on("message", async message => {
   // This event will run on every single message received, from any channel or DM.
