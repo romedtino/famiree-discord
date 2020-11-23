@@ -115,10 +115,10 @@ function lookup(user, timeout) {
 
 function sendMessage(message) {
   discordClient.guilds.find(val => {
-    // if (val.name === "TestServer") {
-      if(val.name === 'Famiree') {
+    // if (val.name === "339633193860988929") {
+      if(val.name === '714045813763866624') {
       val.channels.find(chanVal => {
-        if(chanVal.name === '1337-speak') {
+        if(chanVal.name === 'general') {
         // if (chanVal.name === "general") {
           let channel = discordClient.channels.get(chanVal.id);
           channel.send(`${message}`);
