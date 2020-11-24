@@ -1,9 +1,19 @@
-const API = require('call-of-duty-api')();
+let DEBUG = false
 
+var guildid = "";
+if (DEBUG) {
+    guildid = "339633193860988929";
+} else {
+    guildid = "714045813763866624";
+}
+
+var request = require("request");
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 const adapter = new FileSync(".db-cod.json");
 const db = low(adapter);
+
+var url = "https://api.tracker.gg/api/v2/warzone/standard/profile/";
 
 db.defaults({})
   .write();
@@ -34,6 +44,10 @@ function randRange(min, max) {
     return Math.floor(Math.random() * (max - min) + min);
 }
 
+const sleep = milliseconds => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+  };
+
 function sendMessage(message) {
     if(discordClient === null) {
         console.log("Discord Client not attached. No message sent.");
@@ -41,11 +55,9 @@ function sendMessage(message) {
     }
 
     discordClient.guilds.find(val => {
-    //    if (val.id === "339633193860988929") {
-        if(val.id === '714045813763866624') {
+        if(val.id === guildid) {
             val.channels.find(chanVal => {
             if(chanVal.name === 'general') {
-            //   if (chanVal.name === "general") {
                 let channel = discordClient.channels.get(chanVal.id);
                 channel.send(`${message}`);
                 return;
@@ -55,89 +67,118 @@ function sendMessage(message) {
     });
   }
 
-function lookup(platform, username) {
+function lookup(user, timeout) {
     return new Promise((resolve, reject) => {
-        API.MWBattleData(username, platform).then(data => {
-            resVal = 0;
+      sleep(timeout).then(() => {
+        request(
+          {
+            url: url + user,
+          },
+          function(error, response, body) {
+  
+            if(error) {
+              console.log("Hmm something went wrong querying api..." + error);
+              return resolve(0);
+            }
+            let dataParsed = null;
+            try {
+              dataParsed = JSON.parse(body);
+            } catch(err) {
+              console.log(err);
+              console.log("Failed to parse json body for wzstats");
+              console.log(body);
+              return resolve(0);
+            };
+            //all wins
+            let total =  dataParsed.data.segments[0].stats.wins.value;
+
+            let username = user.split("/")[1].split("%")[0];
+  
+            // if (!(username in userList)) {
             if(!db.has(username).value()) {
-                //new user
-            } else {
-                //existing
-                cur_val = db.get(username).value();
-                if(cur_val < data.br.wins) {
-                    //winner!
-                    console.log(`[WZ] ${username} new score - ${data.br.wins}`);
-                    resVal = username;
-                } else {
-                    console.log(`[WZ] No recent wins for ${username} - ${cur_val}/${data.br.wins}`);
-                }
-    
-            }
-            db.set(username, data.br.wins)
+              // user hasn't been looked up
+              console.log(
+                `[WZSTATS] New user -  ${username} with score: ${total}`
+              );
+              db.set(username, total)
                 .write();
-            return resolve(resVal);
-        }).catch(err => {
-            console.log(`Failed to query ${username}`);
-            console.log(err);
-            return resolve(0);
-        });
+              // userList[username] = total;
+              resolve(0);
+            } else {
+              //user exists, check if value changed
+              cur_val = db.get(username).value()
+              if(cur_val < total) {
+              // if (userList[username] != total) {
+                //Wins detected!
+                console.log(
+                  `[WZSTATS User ${username} has new score with: ${total}`
+                );
+                // userList[username] = total;
+                resolve(username);
+              } else {
+                console.log("[WZSTATS] No recent wins for " + username + " " + cur_val + "/" + total);
+                resolve(0);
+              }
+              db.set(username, total)
+                .write();
+            }
+          }
+        );
+      });
     });
-   
-}
+  }
 
-function queryWins() {
-    API.login(process.env.COD_EMAIL, process.env.COD_PW).then(() => {
-        console.log("logged in!");
-        let tokens = process.env.COD_QUERY.split(",");
-
-        let promises = [];
-
-        for(i=0;i<tokens.length;++i) {
-            let splitted =  tokens[i].split("/");
-            promises.push(lookup(splitted[0], splitted[1]));
+function iterateUserList() {
+    // console.log("[WZSTATS] Iterating...");
+    let tokens = process.env.COD_QUERY.split(",");
+    let lookupPromises = [];
+    for (let i = 0; i < tokens.length; i++) {
+      lookupPromises.push(lookup(tokens[i], 3000 * i));
+    }
+    
+    Promise.all(lookupPromises).then(values => {
+      
+      for (let i = 0; i < values.length; i++) {
+        if (values[i] != 0) {
+          console.log("Entry Approved: " + values[i]);
+          winners.push(values[i]);
         }
-
-        Promise.all(promises).then(values => {
-            for(let i=0;i<values.length;i++) {
-                if(values[i] != 0) {
-                    //winner!
-                    winners.push(values[i]);
-                }
-            }
-
-            if(winners.length > 0) {
-
-                if(secondLoop) {
-                    //Checked list twice
-                    let joined = winners.join(' !! ');
-
-                    let introChoice = randRange(0, intro_text.length);
-                    let urlChoice = randRange(0, url_list.length); 
-                    let subChoice = randRange(0, sub_text.length);
-                    let message =  `**${intro_text[introChoice]}!**\n${url_list[urlChoice]}\n\n${sub_text[subChoice]}\n\`${joined}\``;
-                    sendMessage(message);
-
-                    //reset
-                    secondLoop = Boolean(false);
-                    winners = [];
-                } else {
-                    console.log("[WZ]Winners found. Requeuing..");
-                    secondLoop = Boolean(true);
-                }
-            }
-        });
-    })
-    .catch((e)=> {
-        console.log(e);
+      }
+      if (winners.length > 0 ) {
+        
+        if(secondLoop) {
+          // We've checked our list twice for more winners, send message
+          console.log("[WZSTATS] Sending message...")
+          let joined = winners.join(' !! ');
+          
+          let introChoice = randRange(0, intro_text.length);
+          let urlChoice = randRange(0, url_list.length); 
+          let subChoice = randRange(0, sub_text.length);
+          
+          
+          sendMessage(
+            `**${intro_text[introChoice]}!**\n${url_list[urlChoice]}\n\n${sub_text[subChoice]}\n\`${joined}\``
+          );
+          
+          //Reset since we sent
+          secondLoop = Boolean(false);
+          winners = [];
+          
+        } else {
+          console.log("[WZSTATS] There's a winner, requeuing...")
+          secondLoop = Boolean(true);
+        }
+        
+      }
+      
     });
-}
-
+  }
 
 function execute(client) {
     discordClient = client;
-    queryWins();
-    //30min D: == 1800000
-    setInterval(queryWins, 1800000);
+
+    iterateUserList();
+    setInterval(iterateUserList, 180000);
 }
     
 module.exports.execute = execute;
