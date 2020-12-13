@@ -178,7 +178,7 @@ function execute(client) {
     discordClient = client;
 
     iterateUserList();
-    setInterval(iterateUserList, 180000);
+    setInterval(iterateUserList, 600000);
 }
     
 module.exports.execute = execute;
