@@ -1,122 +1,100 @@
+let DEBUG=false
+
+var TARGET_GUILD="";
+if (DEBUG)
+{
+    TARGET_GUILD=process.env.TEST_GUILD_ID;
+} else {
+    TARGET_GUILD=process.env.FAMIREE_GUILD_ID;
+}
+
+console.log(`Target Guild: ${TARGET_GUILD}`)
+
 // Load up the discord.js library
 const Discord = require("discord.js");
 const congo = require('./bot-conglomorate.js');
 const fnstats = require('./fnstats.js');
 const wzstats = require('./wzstats.js');
-
-const commandList = [];
-const commandList2 = require('./commands.js').commands;
-
-commandList.push(require('./poll.js'));
-const help = require('./help.js');
-commandList.push(help);
-
-commandList.push(require('./mbn.js'));
+const commandList = require('./commands.js').commands;
 
 // This is your client. Some people call it `bot`, some people call it `self`, 
 // some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
 // this is what we're refering to. Your client.
 const client = new Discord.Client();
 
-// Here we load the config.json file that contains our token and our prefix values. 
+// Here we load the config.json file that contains our token
 const config = require("./config.js");
 // config.token contains the bot's token
-// config.prefix contains the message prefix.
 
 client.on("ready", () => {
-  // This event will run if the bot starts, and logs in, successfully.
-  console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`); 
-  // Example of changing the bot's playing game to something useful. `client.user` is what the
-  // docs refer to as the "ClientUser".
-  client.user.setActivity(`${client.guilds.size} servers for fools`);
+    // This event will run if the bot starts, and logs in, successfully.
+    console.log(`Bot has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`);
+    // Example of changing the bot's playing game to something useful. `client.user` is what the
+    // docs refer to as the "ClientUser".
+    client.user.setActivity(`${client.guilds.cache.size} servers for fools`);
 
-  //Add commands 
-  for(var i=0;i<commandList.length;i++) {
-    help.add_command(commandList[i].help_info());
-  }
+    var commandNames = [];
+    commandList.forEach(ele => commandNames.push(ele.command));
 
-  var commandNames = [];
-  commandList2.forEach(ele => commandNames.push(ele.command));
-  loadCongos(commandNames);
-  
-  fnstats.execute(client);
-  wzstats.execute(client);
-  
+    fnstats.execute(client);
+    wzstats.execute(client);
+
+    load_slash_congos(commandNames);
+
+    client.ws.on('INTERACTION_CREATE', async interaction => {
+        // do stuff and respond here
+        for (let cmd of commandList) {
+            if (cmd.command === interaction.data.name) {
+                congo.execute(cmd.command, cmd.args, client, interaction);
+                break;
+            }
+        }
+    });
+
 });
 
-function addCommand(command) {
-  return new Promise((good, bad) => {
-    congo
-      .help(command)
-      .then(res => {
-        console.log(`Added ${command}!`);
-        help.add_command(res);
-        good("yes");
-      })
-      .catch(err => {
-        console.log("Problem receiving help from bot-congo: " + err);
-        good(err);
-      });
-  });
+function add_slash_command(command) {
+    return new Promise((good, bad) => {
+        congo
+            .get_slash(command)
+            .then(res => {
+                console.log(`Added ${command}!`);
+                client.api.applications(client.user.id).guilds(TARGET_GUILD).commands.post({ data: res });
+                good("yes");
+            })
+            .catch(err => {
+                console.log("Problem receiving help from bot-congo: " + err);
+                good(err);
+            });
+    });
 }
 
-function loadCongos(congoList) {
-  var promises = [];
-  for (var i = 0; i < congoList.length; i++) {
-    promises.push(addCommand(congoList[i]));
-  }
-
-  Promise.all(promises).then(results => {
-    console.log("All promises received, checking for failures to redo...");
-    var idx;
-    var redos = [];
-    for (idx = 0; idx < results.length; ++idx) {
-      if (results[idx] !== "yes") {
-        console.log(`Redoing ${results[idx]}...`);
-        redos.push(results[idx]);
-      }
+function load_slash_congos(congoList) {
+    var promises = [];
+    for (var i = 0; i < congoList.length; i++) {
+        promises.push(add_slash_command(congoList[i]));
     }
 
-    if(redos.length != 0) {
-      setTimeout(()=> {loadCongos(redos)}, 60000);
-    }
-  });
+    Promise.all(promises).then(results => {
+        console.log("All promises received, checking for failures to redo...");
+        var idx;
+        var redos = [];
+        for (idx = 0; idx < results.length; ++idx) {
+            if (results[idx] !== "yes") {
+                console.log(`Redoing ${results[idx]}...`);
+                redos.push(results[idx]);
+            }
+        }
+
+        if (redos.length != 0) {
+            setTimeout(() => { load_slash_congos(redos) }, 60000);
+        } else {
+            console.log("No redos. Nice.")
+        }
+    });
 }
-
-client.on("message", async message => {
-  // This event will run on every single message received, from any channel or DM.
-
-  // It's good practice to ignore other bots. This also makes your bot ignore itself
-  // and not get into a spam loop (we call that "botception").
-  if(message.author.bot) return;
-
-
-  // Also good practice to ignore any message that does not start with our prefix, 
-  // which is set in the configuration file.
-  if(message.content.indexOf(config.prefix) !== 0) return;
-
-  // Here we separate our "command" name, and our "arguments" for the command. 
-  // e.g. if we have the message "+say Is this the real life?" , we'll get the following:
-  // command = say
-  // args = ["Is", "this", "the", "real", "life?"]
-  const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
-  const command = args.shift().toLowerCase();
-
-
-  for(var i=0;i<commandList.length;i++) {
-   commandList[i].execute(command, args, message);
-  }
-  
-  for(let cmd of commandList2) {
-    if(cmd.command === command) {
-      congo.execute(command, cmd.args + args.toString(), message);
-      break;
-    }
-  }
-  
-});
 
 client.login(config.token)
-  .catch(console.error);
+    .catch(console.error);
 
 client.on('error', (error) => console.log(error));

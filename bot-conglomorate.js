@@ -1,13 +1,25 @@
 var request = require ("request");
-const config = require('./config.js');
 
 var url=process.env.CONGO_URL;
-function execute(command, args, message) {
+
+function execute(command, args, client, interaction) {
+
+  let extra_args = "";
+  if (interaction.data.options !== undefined)
+  {
+    console.log("DEBUG:" + JSON.stringify(interaction.data.options));
+    interaction.data.options.forEach(e => {
+      if(e.value !== undefined) {
+        extra_args += e.value + " ";
+      }        
+    });
+  }
     
-  var payload = { "client" : message.author.id,
-                 "username" : message.author.username,
+  var payload = { "client" : interaction.member.user.id,
+                 "username" : interaction.member.user.username,
                  "key" : process.env.FAMIREE_KEY,
-                "args" : args };
+                "args" : args + extra_args.trim(),
+                 "raw_opt": interaction.data.options };
   
   var customUrl = url + command;
   
@@ -15,18 +27,22 @@ function execute(command, args, message) {
             url: customUrl,
             json: payload
         }, (error, response, body) => {
-            message.channel.send(body);
-            message.delete()
-              .then(() => console.log("message deleted."))
-              .catch(console.error);
+            client.api.interactions(interaction.id, interaction.token).callback.post({data: {
+              type: 3,
+              data: {
+                tts: false,
+                content: body
+                }
+              }
+            });
   });
 }
 
-function help(command) {
+function get_slash(command) {
   return new Promise( (resolve, reject) => {
-    var customUrl = url + command + "/help" + "?prefix=" + config.prefix;
-    console.log("[CONGO] - Grabbing help: " + customUrl);
-    request.get(customUrl, (error, res, body) => {
+    var customUrl = url + command + "/get_slash";
+    console.log("[CONGO] - Grabbing slash: " + customUrl);
+    request.post(customUrl, (error, res, body) => {
       if(error) {
         console.log("Error on URL request " + error);
         return reject(command);
@@ -42,4 +58,4 @@ function help(command) {
 }
 
 module.exports.execute = execute;
-module.exports.help = help;
+module.exports.get_slash = get_slash;

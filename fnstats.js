@@ -1,3 +1,5 @@
+let DEBUG = false
+
 var request = require("request");
 var filter = require("./channel_filter.js");
 
@@ -5,6 +7,13 @@ const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 const adapter = new FileSync(".db.json");
 const db = low(adapter);
+
+var guildid = "";
+if (DEBUG) {
+    guildid = "339633193860988929";
+} else {
+    guildid = "714045813763866624";
+}
 
 db.defaults({})
   .write();
@@ -115,11 +124,9 @@ function lookup(user, timeout) {
 
 function sendMessage(message) {
   discordClient.guilds.find(val => {
-    // if (val.name === "339633193860988929") {
-      if(val.name === '714045813763866624') {
+      if(val.name === guildid) {
       val.channels.find(chanVal => {
         if(chanVal.name === 'general') {
-        // if (chanVal.name === "general") {
           let channel = discordClient.channels.get(chanVal.id);
           channel.send(`${message}`);
           return;

@@ -17,7 +17,7 @@ module.exports = {
       args: ""
     },
     {
-      command: "mb",
+      command: "myerb",
       args: ""
     },
     {
