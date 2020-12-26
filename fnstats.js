@@ -123,11 +123,11 @@ function lookup(user, timeout) {
 }
 
 function sendMessage(message) {
-  discordClient.guilds.find(val => {
+  discordClient.guilds.cache.find(val => {
       if(val.name === guildid) {
       val.channels.find(chanVal => {
         if(chanVal.name === 'general') {
-          let channel = discordClient.channels.get(chanVal.id);
+          let channel = discordClient.channels.cache.get(chanVal.id);
           channel.send(`${message}`);
           return;
         }

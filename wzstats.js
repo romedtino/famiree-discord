@@ -54,11 +54,11 @@ function sendMessage(message) {
         return;
     }
 
-    discordClient.guilds.find(val => {
+    discordClient.guilds.cache.find(val => {
         if(val.id === guildid) {
             val.channels.find(chanVal => {
             if(chanVal.name === 'general') {
-                let channel = discordClient.channels.get(chanVal.id);
+                let channel = discordClient.channels.cache.get(chanVal.id);
                 channel.send(`${message}`);
                 return;
             }
@@ -111,7 +111,7 @@ function lookup(user, timeout) {
               // if (userList[username] != total) {
                 //Wins detected!
                 console.log(
-                  `[WZSTATS User ${username} has new score with: ${total}`
+                  `[WZSTATS] User ${username} has new score with: ${total}`
                 );
                 // userList[username] = total;
                 resolve(username);
