@@ -56,7 +56,7 @@ function sendMessage(message) {
 
     discordClient.guilds.cache.find(val => {
         if(val.id === guildid) {
-            val.channels.find(chanVal => {
+            val.channels.cache.find(chanVal => {
             if(chanVal.name === 'general') {
                 let channel = discordClient.channels.cache.get(chanVal.id);
                 channel.send(`${message}`);
