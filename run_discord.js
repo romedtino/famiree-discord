@@ -95,6 +95,8 @@ function load_slash_congos(congoList) {
 }
 
 client.login(config.token)
-    .catch(console.error);
-
+    .catch(err => {
+        console.log(err);
+    });
+//client.on('debug', console.log);
 client.on('error', (error) => console.log(error));

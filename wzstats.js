@@ -81,17 +81,18 @@ function lookup(user, timeout) {
               return resolve(0);
             }
             let dataParsed = null;
+            let total = 0;
             try {
               dataParsed = JSON.parse(body);
+              //all wins
+              total =  dataParsed.data.segments[0].stats.wins.value;
             } catch(err) {
               console.log(err);
               console.log("Failed to parse json body for wzstats");
               console.log(body);
               return resolve(0);
             };
-            //all wins
-            let total =  dataParsed.data.segments[0].stats.wins.value;
-
+            
             let username = user.split("/")[1].split("%")[0];
   
             // if (!(username in userList)) {
