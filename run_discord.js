@@ -36,8 +36,8 @@ client.on("ready", () => {
     var commandNames = [];
     commandList.forEach(ele => commandNames.push(ele.command));
 
-    fnstats.execute(client);
-    wzstats.execute(client);
+    // fnstats.execute(client);
+     wzstats.execute(client);
 
     load_slash_congos(commandNames);
 

@@ -1,5 +1,7 @@
 let DEBUG = false
 
+const API = require('call-of-duty-api')();
+
 var guildid = "";
 if (DEBUG) {
     guildid = "339633193860988929";
@@ -67,6 +69,83 @@ function sendMessage(message) {
     });
   }
 
+function lookup_api(platform, username) {
+  let stripped = username.split("#")[0];
+  return new Promise((resolve, reject) => {
+    API.MWBattleData(username, platform).then(data => {
+        resVal = 0;
+        if(!db.has(stripped).value()) {
+            //new user
+            console.log(`[WZ] New user ${stripped} with score - ${data.br_all.wins}`);
+        } else {
+            //existing
+            cur_val = db.get(stripped).value();
+            if(cur_val < data.br_all.wins) {
+                //winner!
+                console.log(`[WZ] ${stripped} new score - ${data.br_all.wins}`);
+                resVal = stripped;
+            } else {
+                console.log(`[WZ] No recent wins for ${stripped} - ${cur_val}/${data.br_all.wins}`);
+            }
+        }
+        db.set(stripped, data.br_all.wins)
+          .write();
+        return resolve(resVal);
+    }).catch(err => {
+        console.log(`Failed to query ${stripped}`);
+        console.log(err);
+        return resolve(0);
+    });
+  });
+}
+
+function queryWins() {
+  API.login(process.env.COD_EMAIL, process.env.COD_PW).then(() => {
+      console.log("logged in!");
+      let tokens = process.env.COD_QUERY_API.split(",");
+
+      let promises = [];
+
+      for(i=0;i<tokens.length;++i) {
+          let splitted =  tokens[i].split("/");
+          promises.push(lookup_api(splitted[0], splitted[1]));
+      }
+
+      Promise.all(promises).then(values => {
+          for(let i=0;i<values.length;i++) {
+              if(values[i] != 0) {
+                  //winner!
+                  winners.push(values[i]);
+              }
+          }
+
+          if(winners.length > 0) {
+
+              if(secondLoop) {
+                  //Checked list twice
+                  let joined = winners.join(' !! ');
+
+                  let introChoice = randRange(0, intro_text.length);
+                  let urlChoice = randRange(0, url_list.length); 
+                  let subChoice = randRange(0, sub_text.length);
+                  let message =  `**${intro_text[introChoice]}!**\n${url_list[urlChoice]}\n\n${sub_text[subChoice]}\n\`${joined}\``;
+                  sendMessage(message);
+
+                  //reset
+                  secondLoop = Boolean(false);
+                  winners = [];
+              } else {
+                  console.log("[WZ]Winners found. Requeuing..");
+                  secondLoop = Boolean(true);
+              }
+          }
+      });
+  })
+  .catch((e)=> {
+      console.log(e);
+  });
+}
+
 function lookup(user, timeout) {
     return new Promise((resolve, reject) => {
       sleep(timeout).then(() => {
@@ -75,7 +154,8 @@ function lookup(user, timeout) {
             url: url + user,
           },
           function(error, response, body) {
-  
+            console.log("JEROME RESP: ", response);
+            console.log("JEROME BODY: ", body);
             if(error) {
               console.log("Hmm something went wrong querying api..." + error);
               return resolve(0);
@@ -178,8 +258,14 @@ function iterateUserList() {
 function execute(client) {
     discordClient = client;
 
-    iterateUserList();
-    setInterval(iterateUserList, 600000);
+    //codapi
+    queryWins();
+    //30min D: == 30min * 60s * 1000ms = 1800000
+    setInterval(queryWins,30*60*1000);
+
+    //tracker.gg
+    // iterateUserList();
+    // setInterval(iterateUserList, 600000);
 }
     
 module.exports.execute = execute;
