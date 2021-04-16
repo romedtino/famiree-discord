@@ -48,5 +48,9 @@ module.exports = {
       command: "weow",
       args: ""
     },
+    {
+      command: "butterfly",
+      args: ""
+    },
   ]
 };
