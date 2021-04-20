@@ -23,30 +23,35 @@ function execute(command, args, client, interaction) {
   
   var customUrl = url + command;
 
+  console.log("Sending loading...");
   client.api.interactions(interaction.id, interaction.token).callback.post({data: {
     type: 5,
     data: {
       tts: false,
-      content: "Loading..."
+      content: "is thinking..."
       }
     }
-  });
+  })
+  .then( () =>{
+    console.log("Requesting from bot congo...");
+    request.post({
+              url: customUrl,
+              json: payload
+          }, (error, response, body) => {
+            //see if its json
+            if(body["text"] === undefined) {
+              new Discord.WebhookClient(client.user.id, interaction.token).send(body);
+            
+            } else {
+              new Discord.WebhookClient(client.user.id, interaction.token).send(body.text, {
+                files: [body.attachment],
+              });
+            }           
+    });
+  })
+  .catch(console.error);
   
-  
-  request.post({
-            url: customUrl,
-            json: payload
-        }, (error, response, body) => {
-          //see if its json
-          if(body["text"] === undefined) {
-            new Discord.WebhookClient(client.user.id, interaction.token).send(body);
-          
-          } else {
-            new Discord.WebhookClient(client.user.id, interaction.token).send(body.text, {
-              files: [body.attachment],
-            });
-          }           
-  });
+
 }
 
 function get_slash(command) {
