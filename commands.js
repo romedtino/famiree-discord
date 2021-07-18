@@ -52,5 +52,9 @@ module.exports = {
       command: "butterfly",
       args: ""
     },
+    {
+      command: "wzwin",
+      args: ""
+    },
   ]
 };
