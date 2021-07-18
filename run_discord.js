@@ -1,4 +1,4 @@
-let DEBUG=false
+let DEBUG=true
 
 var TARGET_GUILD="";
 if (DEBUG)
@@ -12,10 +12,18 @@ console.log(`Target Guild: ${TARGET_GUILD}`)
 
 // Load up the discord.js library
 const Discord = require("discord.js");
+const txttomp3 = require("text-to-mp3");
+const path = require("path");
+const { existsSync } = require("fs");
+const emojiStrip = require('emoji-strip')
+
 const congo = require('./bot-conglomorate.js');
 const fnstats = require('./fnstats.js');
 const wzstats = require('./wzstats.js');
+
 const commandList = require('./commands.js').commands;
+
+const out_dir = "/usr/share/hassio/homeassistant/www/voice";
 
 // This is your client. Some people call it `bot`, some people call it `self`, 
 // some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
@@ -25,6 +33,8 @@ const client = new Discord.Client();
 // Here we load the config.json file that contains our token
 const config = require("./config.js");
 // config.token contains the bot's token
+
+var join_queue = [];
 
 client.on("ready", () => {
     // This event will run if the bot starts, and logs in, successfully.
@@ -37,7 +47,7 @@ client.on("ready", () => {
     commandList.forEach(ele => commandNames.push(ele.command));
 
     // fnstats.execute(client);
-     wzstats.execute(client);
+    //  wzstats.execute(client);
 
     load_slash_congos(commandNames);
 
@@ -51,6 +61,70 @@ client.on("ready", () => {
         }
     });
 
+});
+
+
+var running = false;
+async function pop_voice_queue() {
+    running = true;
+    let mem = join_queue.shift();
+    if(!mem) return;
+    try {
+        var connection = await mem.channel.join();
+        const dispatcher = connection.play(mem.audio);
+        dispatcher.on("finish", end => {
+            if(join_queue.length <= 0) {
+                mem.channel.leave();
+                running = false;
+            } else {
+                pop_voice_queue();
+            }
+        });
+    } catch (err) {
+        console.log(err);
+        mem.channel.leave();
+        running = false;
+    }
+    
+}
+
+client.on("voiceStateUpdate", (oldState, newState) => {
+
+    if (oldState.member.user.bot) return;
+    
+    let message = "";
+    let channel = null;
+    let username = emojiStrip(oldState.member.user.username);
+    let activeID = newState.channelID;
+    if (newState.channelID === null) {
+        //User left channel
+        message = `${username} has lept`;
+        channel = oldState.channel;
+        activeID = oldState.channelID;
+
+    // } else if (oldState.channelID === null) {
+    //     //User joined channel
+    //     message = ` connected`
+    } else {
+        //User switched channels
+        message = `mamsir ${username} is present`;
+        channel = newState.channel;
+    }
+
+    if(channel.members.size == 0) return;
+
+    if(existsSync(path.join(out_dir, `${message}.mp3`))) {
+
+        join_queue.push({channelID: activeID, audio: path.join(out_dir, `${message}.mp3`), channel: channel});
+        if(!running) pop_voice_queue();
+        } else {
+        console.log("creating file");
+        txttomp3.saveMP3(message, path.join(out_dir, `${message}.mp3`), {tl: "en"}).then(filepath => {
+            join_queue.push({channelID: activeID, audio: filepath, channel: channel});
+            if(!running) pop_voice_queue();
+            
+        });
+        }
 });
 
 function add_slash_command(command) {
