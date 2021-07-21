@@ -102,10 +102,11 @@ client.on("voiceStateUpdate", (oldState, newState) => {
         channel = oldState.channel;
         activeID = oldState.channelID;
 
-    // } else if (oldState.channelID === null) {
-    //     //User joined channel
-    //     message = ` connected`
-    } else {
+    } else if(newState.channelID == oldState.channelID) {
+        //state change or changed channel
+        console.log(newState);
+        return;
+    } else  if (oldState.channelID === null || newState.channelID != oldState.channelID){
         //User switched channels
         message = `mamsir ${username} is present`;
         channel = newState.channel;
