@@ -17,10 +17,6 @@ module.exports = {
       args: ""
     },
     {
-      command: "myerb",
-      args: ""
-    },
-    {
       command: "meeseeks",
       args: ""
     },
@@ -31,10 +27,6 @@ module.exports = {
     {
       command: "slap",
       args: ""
-    },
-    {
-      command: "royale",
-      args: process.env.ROYALE_WINNERS
     },
     {
       command: "brazzers",
