@@ -6,4 +6,10 @@ app.get("/", (request, response) => {
   response.sendStatus(200);
 });
 app.listen(process.env.PORT);
-const famiree = require('./run_discord.js');
+
+
+function execute() {
+  const famiree = require('./run_discord.js');
+}
+
+setTimeout(execute, 3000);

@@ -66,6 +66,7 @@ client.on("ready", () => {
 
 var running = false;
 async function pop_voice_queue() {
+    console.log("popping voice queue");
     running = true;
     let mem = join_queue.shift();
     if(!mem) return;
@@ -89,7 +90,7 @@ async function pop_voice_queue() {
 }
 
 client.on("voiceStateUpdate", (oldState, newState) => {
-
+    console.log("voiceStateUpdate");
     if (oldState.member.user.bot) return;
     
     let message = "";
@@ -171,7 +172,7 @@ function load_slash_congos(congoList) {
 
 client.login(config.token)
     .catch(err => {
-        console.log(err);
+        console.log("LOGIN ERR:", err);
     });
 //client.on('debug', console.log);
-client.on('error', (error) => console.log(error));
+client.on('error', (error) => console.log("ONERR:", error));
