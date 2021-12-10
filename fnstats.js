@@ -124,7 +124,7 @@ function lookup(user, timeout) {
 
 function sendMessage(message) {
   discordClient.guilds.cache.find(val => {
-      if(val.name === guildid) {
+      if(val.id === guildid) {
       val.channels.cache.find(chanVal => {
         if(chanVal.name === 'general') {
           let channel = discordClient.channels.cache.get(chanVal.id);
@@ -185,6 +185,7 @@ function iterateUserList() {
 function execute(client) {
   discordClient = client;
   iterateUserList();
+  sendMessage("hi")
   setInterval(iterateUserList, 180000);
 }
 
