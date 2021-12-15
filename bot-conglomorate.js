@@ -2,6 +2,50 @@ var request = require ("request");
 const Discord = require("discord.js");
 var url=process.env.CONGO_URL;
 
+function vanilla(command, args, raw_opt, client, guildid, chan_name) {
+  var payload = { "client" : "123",
+                 "username" : "Nobody",
+                 "key" : process.env.FAMIREE_KEY,
+                "args" : args ,
+                 "raw_opt": raw_opt };
+  var customUrl = url + command;
+  request.post({
+    url: customUrl,
+    json: payload
+  }, (error, response, body) => {
+    //see if its json
+    if(body["text"] === undefined) {
+      // new Discord.WebhookClient(client.user.id, interaction.token).send(body);
+      client.guilds.cache.find(val => {
+        if(val.id === guildid) {
+          val.channels.cache.find(chanVal => {
+            if(chanVal.name === chan_name) {
+              let channel = client.channels.cache.get(chanVal.id);
+              channel.send(`${body}`);
+            }
+          });
+        }
+      });
+    } else {
+      // new Discord.WebhookClient(client.user.id, interaction.token).send(body.text, {
+      //   files: [body.attachment],
+      // });
+      client.guilds.cache.find(val => {
+        if(val.id === guildid) {
+          val.channels.cache.find(chanVal => {
+            if(chanVal.name === 'general') {
+              let channel = client.channels.cache.get(chanVal.id);
+              channel.send(body.text, {
+                files: [body.attachment],
+              });
+            }
+          });
+        }
+      });
+    }           
+  });
+}
+
 function execute(command, args, client, interaction) {
 
   let extra_args = "";
@@ -75,3 +119,4 @@ function get_slash(command) {
 
 module.exports.execute = execute;
 module.exports.get_slash = get_slash;
+module.exports.vanilla = vanilla;

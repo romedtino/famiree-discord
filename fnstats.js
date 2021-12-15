@@ -157,16 +157,21 @@ function iterateUserList() {
       if(secondLoop) {
         // We've checked our list twice for more winners, send message
         console.log("[FNSTATS] Sending message...")
-        let joined = winners.join(' !! ');
+        // let joined = winners.join(' !! ');
         
         let introChoice = randRange(0, intro_text.length);
         let urlChoice = randRange(0, url_list.length); 
         let subChoice = randRange(0, sub_text.length);
-        
-        
-        sendMessage(
-          `**${intro_text[introChoice]}!**\n${url_list[urlChoice]}\n\n${sub_text[subChoice]}\n\`${joined}\``
-        );
+        raw_opt = [];
+
+        for(let i=0; i < winners.length; i++) {
+          raw_opt.push({ "value" : winners[i]});
+        }
+        args = { "real": true };
+        congo.vanilla("wzwin", args, raw_opt, discordClient, guildid, 'general');
+        // sendMessage(
+        //   `**${intro_text[introChoice]}!**\n${url_list[urlChoice]}\n\n${sub_text[subChoice]}\n\`${joined}\``
+        // );
         
         //Reset since we sent
         secondLoop = Boolean(false);
@@ -185,8 +190,7 @@ function iterateUserList() {
 function execute(client) {
   discordClient = client;
   iterateUserList();
-  sendMessage("hi")
-  setInterval(iterateUserList, 180000);
+  setInterval(iterateUserList, 300000);
 }
 
 module.exports.execute = execute;
