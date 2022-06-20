@@ -15,6 +15,8 @@ if (DEBUG) {
     guildid = "714045813763866624";
 }
 
+var congo = null;
+
 db.defaults({})
   .write();
 
@@ -71,22 +73,24 @@ function lookup(user, timeout) {
             return resolve(0);
           }
           let dataParsed = null;
+          var total = 0;
           try {
             dataParsed = JSON.parse(body);
+            //all wins
+            let target = dataParsed.lifeTimeStats.find( (stat) => {
+              if(stat.key === "Wins") {
+                return true;
+              }
+            });
+            
+            total = target.value;
           } catch(err) {
             console.log(err);
             console.log("Failed to parse json body for fnstats");
             console.log(body);
             return resolve(0);
           };
-          //all wins
-          let target = dataParsed.lifeTimeStats.find( (stat) => {
-            if(stat.key === "Wins") {
-              return true;
-            }
-          });
           
-          let total = target.value;
 
           // if (!(dataParsed.epicUserHandle in userList)) {
           if(!db.has(dataParsed.epicUserHandle).value()) {
@@ -187,8 +191,9 @@ function iterateUserList() {
   });
 }
 
-function execute(client) {
+function execute(client, congo_cpy) {
   discordClient = client;
+  congo = congo_cpy
   iterateUserList();
   setInterval(iterateUserList, 300000);
 }

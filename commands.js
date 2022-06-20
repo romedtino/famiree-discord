@@ -48,5 +48,9 @@ module.exports = {
       command: "wzwin",
       args: ""
     },
+    {
+      command: "jiggle",
+      args: ""
+    },
   ]
 };
