@@ -49,10 +49,10 @@ function vanilla(command, args, raw_opt, client, guildid, chan_name) {
 function execute(command, args, client, interaction) {
 
   let extra_args = "";
-  if (interaction.data.options !== undefined)
+  if (interaction.options._hoistedOptions !== undefined)
   {
-    console.log("DEBUG:" + JSON.stringify(interaction.data.options));
-    interaction.data.options.forEach(e => {
+    console.log("DEBUG:" + JSON.stringify(interaction.options._hoistedOptions));
+    interaction.options._hoistedOptions.forEach(e => {
       if(e.value !== undefined) {
         extra_args += e.value + " ";
       }        
@@ -63,37 +63,29 @@ function execute(command, args, client, interaction) {
                  "username" : interaction.member.user.username,
                  "key" : process.env.FAMIREE_KEY,
                 "args" : args + extra_args.trim(),
-                 "raw_opt": interaction.data.options };
+                 "raw_opt": interaction.options._hoistedOptions };
   
   var customUrl = url + command;
 
   console.log("Sending loading...");
-  client.api.interactions(interaction.id, interaction.token).callback.post({data: {
-    type: 5,
-    data: {
-      tts: false,
-      content: "is thinking..."
-      }
-    }
-  })
-  .then( () =>{
-    console.log("Requesting from bot congo...");
-    request.post({
-              url: customUrl,
-              json: payload
-          }, (error, response, body) => {
-            //see if its json
-            if(body["text"] === undefined) {
-              new Discord.WebhookClient(client.user.id, interaction.token).send(body);
-            
-            } else {
-              new Discord.WebhookClient(client.user.id, interaction.token).send(body.text, {
-                files: [body.attachment],
-              });
-            }           
+  interaction.deferReply().then( () => {
+      request.post({
+          url: customUrl,
+          json: payload
+      }, (error, response, body) => {
+        console.log(JSON.stringify(body));
+        //see if its json
+        if(body["text"] === undefined) {
+          interaction.editReply(body);
+        
+        } else {
+          
+          const exampleEmbed = { image: {url: body.attachment}}
+          interaction.editReply({content: body.text, embeds: [exampleEmbed]});
+          
+        }           
     });
-  })
-  .catch(console.error);
+  });
   
 
 }

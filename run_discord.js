@@ -1,4 +1,4 @@
-let DEBUG=false
+let DEBUG=true
 
 var TARGET_GUILD="";
 if (DEBUG)
@@ -12,6 +12,7 @@ console.log(`Target Guild: ${TARGET_GUILD}`)
 
 // Load up the discord.js library
 const Discord = require("discord.js");
+const { REST } = require('@discordjs/rest');
 const txttomp3 = require("text-to-mp3");
 const path = require("path");
 const { existsSync } = require("fs");
@@ -28,13 +29,15 @@ const out_dir = "/usr/share/hassio/homeassistant/www/voice";
 // This is your client. Some people call it `bot`, some people call it `self`, 
 // some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
 // this is what we're refering to. Your client.
-const client = new Discord.Client();
+const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds]});
 
 // Here we load the config.json file that contains our token
 const config = require("./config.js");
 // config.token contains the bot's token
 
 var join_queue = [];
+
+const rest = new REST({ version: '10' }).setToken(config.token);
 
 client.on("ready", () => {
     // This event will run if the bot starts, and logs in, successfully.
@@ -51,16 +54,27 @@ client.on("ready", () => {
 
     load_slash_congos(commandNames);
 
-    client.ws.on('INTERACTION_CREATE', async interaction => {
-        // do stuff and respond here
-        for (let cmd of commandList) {
-            if (cmd.command === interaction.data.name) {
-                congo.execute(cmd.command, cmd.args, client, interaction);
-                break;
-            }
-        }
-    });
+    // client.ws.on('INTERACTION_CREATE', async interaction => {
+    //     // do stuff and respond here
+    //     for (let cmd of commandList) {
+    //         if (cmd.command === interaction.data.name) {
+    //             congo.execute(cmd.command, cmd.args, client, interaction);
+    //             break;
+    //         }
+    //     }
+    // });
 
+});
+
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isChatInputCommand()) return;
+
+	for (let cmd of commandList) {
+        if (cmd.command === interaction.commandName) {
+            congo.execute(cmd.command, cmd.args, client, interaction);
+            break;
+        }
+    }
 });
 
 
@@ -135,8 +149,9 @@ function add_slash_command(command) {
             .get_slash(command)
             .then(res => {
                 console.log(`Added ${command}!`);
-                client.api.applications(client.user.id).guilds(TARGET_GUILD).commands.post({ data: res });
-                good("yes");
+                // client.api.applications(client.user.id).guilds(TARGET_GUILD).commands.post({ data: res });
+                // rest.put(Discord.Routes.applicationGuildCommands(client.user.id,TARGET_GUILD),{ body: [res] });
+                good(res);
             })
             .catch(err => {
                 console.log("Problem receiving help from bot-congo: " + err);
@@ -152,22 +167,38 @@ function load_slash_congos(congoList) {
     }
 
     Promise.all(promises).then(results => {
-        console.log("All promises received, checking for failures to redo...");
+        console.log("All promises received, Submitting to Discord...");
         var idx;
-        var redos = [];
+        var commands = [];
         for (idx = 0; idx < results.length; ++idx) {
-            if (results[idx] !== "yes") {
-                console.log(`Redoing ${results[idx]}...`);
-                redos.push(results[idx]);
-            }
+            commands.push(results[idx]); 
         }
 
-        if (redos.length != 0) {
-            setTimeout(() => { load_slash_congos(redos) }, 60000);
-        } else {
+        rest.put(Discord.Routes.applicationGuildCommands(client.user.id,TARGET_GUILD),{ body: commands })
+        .then( () => {
             console.log("No redos. Nice.")
-        }
+        })
+        .catch(error => {console.log("Error: ${error}")});
+
     });
+
+    // Promise.all(promises).then(results => {
+    //     console.log("All promises received, checking for failures to redo...");
+    //     var idx;
+    //     var redos = [];
+    //     for (idx = 0; idx < results.length; ++idx) {
+    //         if (results[idx] !== "yes") {
+    //             console.log(`Redoing ${results[idx]}...`);
+    //             redos.push(results[idx]);
+    //         }
+    //     }
+
+    //     if (redos.length != 0) {
+    //         setTimeout(() => { load_slash_congos(redos) }, 60000);
+    //     } else {
+    //         console.log("No redos. Nice.")
+    //     }
+    // });
 }
 
 client.login(config.token)
