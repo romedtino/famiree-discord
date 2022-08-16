@@ -1,4 +1,4 @@
-let DEBUG=true
+let DEBUG=false
 
 var TARGET_GUILD="";
 if (DEBUG)
