@@ -13,6 +13,9 @@ console.log(`Target Guild: ${TARGET_GUILD}`)
 // Load up the discord.js library
 const Discord = require("discord.js");
 const { REST } = require('@discordjs/rest');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, NoSubscriberBehavior } = require('@discordjs/voice');
+const { VoiceConnectionStatus } = require("@discordjs/voice");
+const { AudioPlayerStatus } = require("@discordjs/voice");
 const txttomp3 = require("text-to-mp3");
 const path = require("path");
 const { existsSync } = require("fs");
@@ -29,10 +32,11 @@ const out_dir = "/usr/share/hassio/homeassistant/www/voice";
 // This is your client. Some people call it `bot`, some people call it `self`, 
 // some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
 // this is what we're refering to. Your client.
-const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds]});
+const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildVoiceStates]});
 
 // Here we load the config.json file that contains our token
 const config = require("./config.js");
+
 // config.token contains the bot's token
 
 var join_queue = [];
@@ -77,24 +81,53 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
+function delay(t) {
+    return new Promise(resolve => {
+        setTimeout(resolve, t);
+    });
+}
 
 var running = false;
 async function pop_voice_queue() {
     console.log("popping voice queue");
     running = true;
     let mem = join_queue.shift();
-    if(!mem) return;
+    if(!mem) {
+        running = false;
+        return true;
+    }
     try {
-        var connection = await mem.channel.join();
-        const dispatcher = connection.play(mem.audio);
-        dispatcher.on("finish", end => {
-            if(join_queue.length <= 0) {
-                mem.channel.leave();
-                running = false;
-            } else {
-                pop_voice_queue();
-            }
+        await delay(1);
+        console.log("trying to join voice");
+        var connection = joinVoiceChannel({
+            channelId: mem.channel.id,
+            guildId: mem.channel.guild.id,
+            adapterCreator: mem.channel.guild.voiceAdapterCreator,
         });
+        connection.on(VoiceConnectionStatus.Ready, () => {
+            console.log("channel joined");
+            const player = createAudioPlayer({
+                behaviors: {
+                    noSubscriber: NoSubscriberBehavior.Pause,
+                },
+            });
+            player.play(createAudioResource(mem.audio));
+            const dispatcher = connection.subscribe(player);
+            player.on(AudioPlayerStatus.Idle, () =>{
+                console.log("audio should have played?");
+                
+                    if(join_queue.length <= 0) {
+                        console.log("all done. destroying audio");
+                        connection.destroy();
+                        running = false;
+                    } else {
+                        pop_voice_queue();
+                         
+                    }
+            });
+            
+        });
+        
     } catch (err) {
         console.log(err);
         mem.channel.leave();
@@ -110,18 +143,19 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     let message = "";
     let channel = null;
     let username = emojiStrip(oldState.member.user.username);
-    let activeID = newState.channelID;
-    if (newState.channelID === null) {
+    let activeID = newState.channelId;
+    if (newState.channelId === null) {
         //User left channel
         message = `${username} has lept`;
         channel = oldState.channel;
-        activeID = oldState.channelID;
+        activeID = oldState.channelId;
 
-    } else if(newState.channelID == oldState.channelID) {
+    } else if(newState.channelId === oldState.channelId) {
         //state change or changed channel
-        console.log(newState);
+        // console.log("OLD: ", oldState);
+        console.log("NEW: ", newState);
         return;
-    } else  if (oldState.channelID === null || newState.channelID != oldState.channelID){
+    } else  if (oldState.channelId === null || newState.channelId != oldState.channelId){
         //User switched channels
         message = `mamsir ${username} is present`;
         channel = newState.channel;
@@ -130,16 +164,17 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     if(channel.members.size == 0) return;
 
     if(existsSync(path.join(out_dir, `${message}.mp3`))) {
-
-        join_queue.push({channelID: activeID, audio: path.join(out_dir, `${message}.mp3`), channel: channel});
+        console.log(`${message}.mp3 exists`)
+        join_queue.push({channelId: activeID, audio: path.join(out_dir, `${message}.mp3`), channel: channel});
         if(!running) pop_voice_queue();
-        } else {
+    } else {
         console.log("creating file");
         txttomp3.saveMP3(message, path.join(out_dir, `${message}.mp3`), {tl: "en"}).then(filepath => {
-            join_queue.push({channelID: activeID, audio: filepath, channel: channel});
+            console.log(`playing: ${filepath}`)
+            join_queue.push({channelId: activeID, audio: filepath, channel: channel});
             if(!running) pop_voice_queue();
-            
-        });
+        
+    });
         }
 });
 
@@ -182,23 +217,6 @@ function load_slash_congos(congoList) {
 
     });
 
-    // Promise.all(promises).then(results => {
-    //     console.log("All promises received, checking for failures to redo...");
-    //     var idx;
-    //     var redos = [];
-    //     for (idx = 0; idx < results.length; ++idx) {
-    //         if (results[idx] !== "yes") {
-    //             console.log(`Redoing ${results[idx]}...`);
-    //             redos.push(results[idx]);
-    //         }
-    //     }
-
-    //     if (redos.length != 0) {
-    //         setTimeout(() => { load_slash_congos(redos) }, 60000);
-    //     } else {
-    //         console.log("No redos. Nice.")
-    //     }
-    // });
 }
 
 client.login(config.token)

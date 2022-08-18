@@ -3,6 +3,7 @@ lockfileVersion: 5.4
 specifiers:
   '@discordjs/opus': ^0.8.0
   '@discordjs/rest': ^1.0.1
+  '@discordjs/voice': ^0.11.0
   call-of-duty-api: ^1.3.5
   discord.js: ^14.2.0
   emoji-strip: ^1.0.1
@@ -20,6 +21,7 @@ specifiers:
 dependencies:
   '@discordjs/opus': 0.8.0
   '@discordjs/rest': 1.0.1
+  '@discordjs/voice': 0.11.0_@discordjs+opus@0.8.0
   call-of-duty-api: 1.3.5
   discord.js: 14.2.0
   emoji-strip: 1.0.1
@@ -108,6 +110,24 @@ packages:
       file-type: 17.1.6
       tslib: 2.4.0
       undici: 5.8.2
+    dev: false
+
+  /@discordjs/voice/0.11.0_@discordjs+opus@0.8.0:
+    resolution: {integrity: sha512-6+9cj1dxzBJm7WJ9qyG2XZZQ8rcLl6x2caW0C0OxuTtMLAaEDntpb6lqMTFiBg/rDc4Rd59g1w0gJmib33CuHw==}
+    engines: {node: '>=16.9.0'}
+    dependencies:
+      '@types/ws': 8.5.3
+      discord-api-types: 0.36.3
+      prism-media: 1.3.4_@discordjs+opus@0.8.0
+      tslib: 2.4.0
+      ws: 8.8.1
+    transitivePeerDependencies:
+      - '@discordjs/opus'
+      - bufferutil
+      - ffmpeg-static
+      - node-opus
+      - opusscript
+      - utf-8-validate
     dev: false
 
   /@gar/promisify/1.1.3:
@@ -2861,6 +2881,26 @@ packages:
   /pngjs/3.4.0:
     resolution: {integrity: sha512-NCrCHhWmnQklfH4MtJMRjZ2a8c80qXeMlQMv2uVp9ISJMTt562SbGd6n2oq0PaPgKm7Z6pL9E2UlLIhC+SHL3w==}
     engines: {node: '>=4.0.0'}
+    dev: false
+
+  /prism-media/1.3.4_@discordjs+opus@0.8.0:
+    resolution: {integrity: sha512-eW7LXORkTCQznZs+eqe9VjGOrLBxcBPXgNyHXMTSRVhphvd/RrxgIR7WaWt4fkLuhshcdT5KHL88LAfcvS3f5g==}
+    peerDependencies:
+      '@discordjs/opus': ^0.8.0
+      ffmpeg-static: ^5.0.2 || ^4.2.7 || ^3.0.0 || ^2.4.0
+      node-opus: ^0.3.3
+      opusscript: ^0.0.8
+    peerDependenciesMeta:
+      '@discordjs/opus':
+        optional: true
+      ffmpeg-static:
+        optional: true
+      node-opus:
+        optional: true
+      opusscript:
+        optional: true
+    dependencies:
+      '@discordjs/opus': 0.8.0
     dev: false
 
   /proc-log/2.0.1:
